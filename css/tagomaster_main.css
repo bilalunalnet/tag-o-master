@@ -1,0 +1,7 @@
+.post-like a {
+    color: #00ff00;
+}
+
+.post-like a.down {
+    color: #0A246A;
+}
