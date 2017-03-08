@@ -52,8 +52,13 @@ class tagOmaster {
      */
     public function like_button($content) {
         if (get_post_type() == post && is_singular()) {
-            $html = '<p class="post-like"><a data-event="like" data-post_id="'.get_the_ID().'" href="#">';
-            $html .= 'Like</a><span class="count">'.$this->likesCount(get_the_ID()).'</span></p>';
+            $html = '<p class="post-like">';
+            if ($this->hasAlreadyLiked(get_the_ID())) {
+                $html .= '<a data-event="dislike" data-post_id="'.get_the_ID().'" href="#">Dislike';
+            }else{
+                $html .= '<a data-event="like" data-post_id="'.get_the_ID().'" href="#">Like';
+            }
+            $html .= '</a><span class="count">'.$this->likesCount(get_the_ID()).'</span></p>';
             $content .= $html;
         }
         return $content;
@@ -78,12 +83,19 @@ class tagOmaster {
      */
     public function likePost($post_id) {
         $likes_count = $this->likesCount($post_id);
-        if ($likes_count) {
-            update_post_meta($post_id, '_likes_count', ++$likes_count);
+        $user_IP = $_SERVER['REMOTE_ADDR'];
+        $meta_IP = get_post_meta($post_id,'_likers_IP');
+        $likers_IP = $meta_IP[0];
+        //avoiding array errors
+        if(!is_array($likers_IP)) {
+            $likers_IP = array();
+        }
+        $likers_IP[] = $user_IP;
+        if(update_post_meta($post_id, '_likes_count', ++$likes_count)) {
+            update_post_meta($post_id,'_likers_IP',$likers_IP);
             echo $likes_count;
         }else{
-            add_post_meta($post_id, '_likes_count', 1);
-            echo 1;
+            echo "error";
         }
     }
     /**
@@ -92,20 +104,50 @@ class tagOmaster {
      */
     public function dislikePost($post_id) {
         $likes_count = $this->likesCount($post_id);
-        if ($likes_count) {
-            update_post_meta($post_id, '_likes_count', --$likes_count);
+        $user_IP = $_SERVER['REMOTE_ADDR'];
+        $meta_IP = get_post_meta($post_id,'_likers_IP');
+        $likers_IP = $meta_IP[0];
+        //avoiding array errors
+        if(!is_array($likers_IP)) {
+            $likers_IP = array();
+        }
+        if ($this->hasAlreadyLiked($post_id)) {
+            $key = array_search($user_IP,$likers_IP);
+            unset($likers_IP[$key]);
+        }
+        if(update_post_meta($post_id, '_likes_count', --$likes_count)) {
+            update_post_meta($post_id,'_likers_IP',$likers_IP);
             echo $likes_count;
         }else{
-            add_post_meta($post_id, '_likes_count', -1);
-            echo -1;
+            echo "error";
         }
     }
+    /**
+     * returning given posts id
+     * @param $post_id
+     * @return mixed
+     */
     public function likesCount($post_id) {
         return get_post_meta($post_id,'_likes_count',true);
     }
 
+    /**
+     * Controlling if user has already liked the post
+     * @param $post_id
+     * @return bool
+     */
     public function hasAlreadyLiked($post_id) {
-
+        $user_IP = $_SERVER['REMOTE_ADDR'];
+        $meta_IP = get_post_meta($post_id,'_likers_IP');
+        $likers_IP = $meta_IP[0];
+        if (!is_array($likers_IP)) {
+            $likers_IP = array();
+        }
+        if(in_array($user_IP,$likers_IP)) {
+            return true;
+        }else{
+            return false;
+        }
     }
 
 }
