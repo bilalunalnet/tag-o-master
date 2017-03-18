@@ -11,10 +11,14 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
  **/
 
 
+// Load plugin files
+require_once plugin_dir_path( __FILE__ ) . 'admin-page.php';
+
 class tagOmaster {
     /**
      * Action hooks
      */
+
     public function run() {
         // Register-Enqueue plugin styles and scripts
         add_action('init', array($this,'register_script'));
@@ -149,7 +153,6 @@ class tagOmaster {
             return false;
         }
     }
-
 }
 
 $plugin = new tagOmaster();
