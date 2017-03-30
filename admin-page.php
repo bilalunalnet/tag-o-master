@@ -25,45 +25,91 @@ function admin_menu_content() {
     ?>
     <div class="wrap">
         <h2>Tag-o-Master Admin Page</h2>
+
         <?php
-        $id_likes_count = array();
-        $post_ids = get_posts(array(
-            'fields'        => 'ids', // Only get post IDs
-            'posts_per_page' => -1
-        ));
-        $i = 0;
-        foreach ($post_ids as $id) {
-            $likes_count = get_post_meta($id,'_likes_count',true);
-            if ($likes_count) {
-                $id_likes_count[$i] = array(
-                    "id" => $id,
-                    "likes_count" => $likes_count
-                );
-                $i++;
+        global $wpdb;
+        // PAGINATION
+
+        $tag_count_sql = "SELECT COUNT(*)
+                          FROM $wpdb->terms K, $wpdb->term_taxonomy Y, $wpdb->term_relationships P, $wpdb->postmeta Q
+                          WHERE K.term_id = Y.term_id
+                            AND Y.taxonomy = 'post_tag'
+                            AND P.term_taxonomy_id = K.term_id
+                            AND Q.post_id = P.object_id
+                            AND Q.meta_key = '_likes_count'";
+        $tag_count = $wpdb->get_var($tag_count_sql);
+        $tags_per_page = 10;
+        $page_count = ceil($tag_count / $tags_per_page);
+        $page = isset($_GET['pages']) ? (int) $_GET['pages'] : 1;
+        if($page < 1) $page = 1;
+        if($page > $page_count) $page = $page_count;
+        $limit = ($page - 1) * $tags_per_page;
+        $current_url = add_query_arg( NULL, NULL );
+
+        // PAGE LINKS
+        for($s = 1; $s <= $page_count; $s++) {
+            if($page == $s) {
+                echo $s . ' ';
+            } else {
+                echo '<a href="'.$current_url.'&pages=' . $s . '">' . $s . '</a> ';
             }
         }
-        $tags = array(); // TODO sort this array
-        foreach ($id_likes_count as $id) {
-            $post_tags = get_the_tags($id["id"]);
-            if ($post_tags) {
-                foreach($post_tags as $tag) {
-                    if($tag->taxonomy = 'post_tag') {
-                        if (!isset($tags[$tag->term_id])) {
-                            $tags[$tag->term_id] = array(
-                                "tag_id" => $tag->term_id,
-                                "tag_name" => $tag->name,
-                                "tag_likes_count" => $id["likes_count"]
-                            );
-                        }else{
-                            $tags[$tag->term_id]["tag_likes_count"] += $id["likes_count"];
-                        }
-                    }
-                }
+        ?>
+
+        <table class="widefat">
+            <thead>
+            <tr>
+                <th>Tag ID</th>
+                <th>Tag Name</th>
+                <th>Posts the tag is associated with</th>
+                <th>Likes count</th>
+            </tr>
+            </thead>
+            <tfoot>
+            <tr>
+                <th>Tag ID</th>
+                <th>Tag Name</th>
+                <th>Posts the tag is associated with</th>
+                <th>Likes count</th>
+            </tr>
+            </tfoot>
+            <tbody>
+            <?php
+            // LISTING TAGS
+            $sql = "SELECT
+                      K.term_id as tag_id,
+                      K.name, Y.count, SUM(Q.meta_value) as like_count
+                    FROM $wpdb->terms K, $wpdb->term_taxonomy Y, $wpdb->term_relationships P, $wpdb->postmeta Q
+                    WHERE K.term_id = Y.term_id
+                          AND Y.taxonomy = 'post_tag'
+                          AND P.term_taxonomy_id = K.term_id
+                          AND Q.post_id = P.object_id
+                          AND Q.meta_key = '_likes_count'
+                    GROUP BY K.term_id,K.name,Y.count
+                    ORDER BY like_count DESC
+                    LIMIT $limit, $tags_per_page
+                    ";
+            $tags = $wpdb->get_results($sql, OBJECT);
+            foreach ($tags as $tag) {
+                echo "<tr>";
+                echo "<td>$tag->tag_id</td>";
+                echo "<td><a href='".get_tag_link($tag->tag_id)."'>$tag->name</a></td>";
+                echo "<td>$tag->count</td>";
+                echo "<td>$tag->like_count</td>";
+                echo "</tr>";
             }
+            ?>
+            </tbody>
+        </table>
+        <?php
+        // PAGE LINKS
+        for($s = 1; $s <= $page_count; $s++) {
+        if($page == $s) {
+        echo $s . ' ';
+        } else {
+        echo '<a href="'.$current_url.'&pages=' . $s . '">' . $s . '</a> ';
         }
-        echo "<pre>";
-        print_r($tags);
-        echo "</pre>";
+        }
         ?>
     </div>
 <?php
