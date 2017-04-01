@@ -1,7 +1,5 @@
-.post-like a {
-    color: #00ff00;
-}
-
-.post-like a.down {
-    color: #0A246A;
+#load {
+    background-image: url("../img/loading.gif");
+    width: 20px;
+    height: 20px;
 }

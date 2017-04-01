@@ -12,7 +12,8 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 
 // Load plugin files
-require_once plugin_dir_path( __FILE__ ) . 'admin-page.php';
+require_once plugin_dir_path( __FILE__ ) . 'admin-page.php'; // admin menu entry and page content
+require_once plugin_dir_path(__FILE__) . 'tom-widget.php'; // plugin widget
 
 class tagOmaster {
     /**
@@ -58,11 +59,12 @@ class tagOmaster {
         if (get_post_type() == post && is_singular()) {
             $html = '<p class="post-like">';
             if ($this->hasAlreadyLiked(get_the_ID())) {
-                $html .= '<a data-event="dislike" data-post_id="'.get_the_ID().'" href="#">Dislike';
+                $html .= '<a data-event="dislike" data-post_id="'.get_the_ID().'" href="#/">dislike ';
             }else{
-                $html .= '<a data-event="like" data-post_id="'.get_the_ID().'" href="#">Like';
+                $html .= '<a data-event="like" data-post_id="'.get_the_ID().'" href="#/">like ';
             }
-            $html .= '</a><span class="count">'.$this->likesCount(get_the_ID()).'</span></p>';
+            $html .= '</a><span class="count">'.$this->likesCount(get_the_ID());
+            $html .= '<p id="load" style="display: none"></p></span></p>';
             $content .= $html;
         }
         return $content;

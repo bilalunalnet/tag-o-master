@@ -1,20 +1,22 @@
 /**
- * Created by bilalunalnet on 2.03.2017.
+ * Created by PhpStorm.
+ * User: bilalunalnet
+ * Date: 05.03.2017
+ * Time: 10:01
  */
 
 jQuery(document).ready(function () {
    jQuery('.post-like a').click(function () {
+       jQuery("#load").show();
        var button = jQuery(this);
        var post_id = button.data('post_id');
        var event = button.data('event');
        if (event == 'like') {
            button.text('dislike');
            button.data('event','unlike');
-           button.attr('class', 'unlike');
        }else {
            button.text('like');
            button.data('event','like');
-           button.attr('class', 'like');
        }
        jQuery.ajax({
            type : 'post',
@@ -26,6 +28,7 @@ jQuery(document).ready(function () {
                nonce : tom_ajax.nonce
            },
            success : function (response) {
+               jQuery("#load").hide();
                jQuery('.count').text(response);
            }
        });
