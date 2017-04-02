@@ -30,7 +30,7 @@ function admin_menu_content() {
         global $wpdb;
         // PAGINATION
 
-        $tag_count_sql = "SELECT COUNT(*)
+        $tag_count_sql = "SELECT COUNT(DISTINCT K.term_id)
                           FROM $wpdb->terms K, $wpdb->term_taxonomy Y, $wpdb->term_relationships P, $wpdb->postmeta Q
                           WHERE K.term_id = Y.term_id
                             AND Y.taxonomy = 'post_tag'
