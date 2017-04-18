@@ -29,7 +29,7 @@ You can add the widget to your page on appearance->widgets page.
 Bilal Ünal
 
 * [Twitter](https://www.twitter.com/bilalunalnet)
-* admin[at]bilalunal[dot]com
+* admin[at]bilalunal[dot]net
 
 ## License
 
